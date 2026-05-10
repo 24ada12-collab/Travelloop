@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}My Trips — Traveloop{% endblock %}
+{% block topbar_title %}My Trips{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('create_trip') }}" class="btn btn-primary btn-sm">+ New Trip</a>
+{% endblock %}
+{% block content %}
+<!-- SEARCH BAR -->
+<form method="GET" class="mb-20" style="display:flex;gap:10px;max-width:500px;">
+  <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search trips by name or destination...">
+  <button type="submit" class="btn btn-secondary">Search</button>
+  {% if q %}<a href="{{ url_for('trips') }}" class="btn btn-secondary">Clear</a>{% endif %}
+</form>
+
+{% macro trip_card(trip) %}
+<div class="card mb-12" style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+  <div style="flex:1;min-width:200px;">
+    <div class="flex-center gap-8 mb-8">
+      <span class="badge {% if trip.status == 'ongoing' %}badge-info{% elif trip.status == 'upcoming' %}badge-warning{% else %}badge-muted{% endif %}">{{ trip.status|capitalize }}</span>
+      {% if trip.is_public %}<span class="badge badge-success">Public</span>{% endif %}
+    </div>
+    <div style="font-size:16px;font-weight:600;margin-bottom:4px;">{{ trip.title }}</div>
+    <div class="text-muted fs-13">📍 {{ trip.destination or 'Destination TBD' }}</div>
+    {% if trip.start_date %}
+    <div class="text-muted fs-13 mt-8">📅 {{ trip.start_date.strftime('%d %b %Y') }} – {{ trip.end_date.strftime('%d %b %Y') if trip.end_date else 'Open' }}</div>
+    {% endif %}
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+    {% if trip.total_budget %}
+    <span class="badge badge-success">Budget: ₹{{ '{:,.0f}'.format(trip.total_budget) }}</span>
+    {% endif %}
+    <a href="{{ url_for('trip_detail', trip_id=trip.id) }}" class="btn btn-secondary btn-sm">View</a>
+    <a href="{{ url_for('itinerary', trip_id=trip.id) }}" class="btn btn-secondary btn-sm">Itinerary</a>
+    <a href="{{ url_for('checklist', trip_id=trip.id) }}" class="btn btn-secondary btn-sm">Checklist</a>
+    <form method="POST" action="{{ url_for('delete_trip', trip_id=trip.id) }}" style="display:inline;" onsubmit="return confirm('Delete this trip?')">
+      <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+    </form>
+  </div>
+</div>
+{% endmacro %}
+
+{% if ongoing %}
+<div class="mb-20">
+  <div class="flex-center gap-8 mb-12">
+    <span style="width:8px;height:8px;border-radius:50%;background:#63b3ed;display:inline-block;"></span>
+    <span style="font-size:14px;font-weight:600;">Ongoing</span>
+    <span class="badge badge-info">{{ ongoing|length }}</span>
+  </div>
+  {% for trip in ongoing %}{{ trip_card(trip) }}{% endfor %}
+</div>
+{% endif %}
+
+{% if upcoming %}
+<div class="mb-20">
+  <div class="flex-center gap-8 mb-12">
+    <span style="width:8px;height:8px;border-radius:50%;background:var(--accent3);display:inline-block;"></span>
+    <span style="font-size:14px;font-weight:600;">Upcoming</span>
+    <span class="badge badge-warning">{{ upcoming|length }}</span>
+  </div>
+  {% for trip in upcoming %}{{ trip_card(trip) }}{% endfor %}
+</div>
+{% endif %}
+
+{% if completed %}
+<div class="mb-20">
+  <div class="flex-center gap-8 mb-12">
+    <span style="width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block;"></span>
+    <span style="font-size:14px;font-weight:600;">Completed</span>
+    <span class="badge badge-muted">{{ completed|length }}</span>
+  </div>
+  {% for trip in completed %}{{ trip_card(trip) }}{% endfor %}
+</div>
+{% endif %}
+
+{% if not ongoing and not upcoming and not completed %}
+<div class="empty-state" style="padding:80px 20px;">
+  <div class="empty-state-icon">✈️</div>
+  <div style="font-size:18px;font-weight:600;margin-bottom:8px;">No trips yet</div>
+  <div class="empty-state-text mb-16">Start planning your next adventure!</div>
+  <a href="{{ url_for('create_trip') }}" class="btn btn-primary">+ Plan a Trip</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register — Traveloop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1117;--bg2:#161b22;--bg3:#1c2330;--card:#1e2736;--border:#2d3748;--accent:#00c6a7;--accent2:#ff6b6b;--text:#e6edf3;--muted:#8b949e;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;}
+.register-wrap{width:100%;max-width:560px;}
+.brand{text-align:center;margin-bottom:28px;}
+.brand-name{font-family:'Playfair Display',serif;font-size:32px;color:var(--accent);}
+.brand-sub{font-size:13px;color:var(--muted);margin-top:4px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:36px;}
+.card-title{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:4px;}
+.card-sub{font-size:13px;color:var(--muted);margin-bottom:24px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;}
+.form-control{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s;}
+.form-control:focus{border-color:var(--accent);}
+.form-control::placeholder{color:var(--muted);}
+textarea.form-control{resize:vertical;min-height:70px;}
+.btn-primary{width:100%;background:var(--accent);color:#000;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.2s;margin-top:4px;}
+.btn-primary:hover{background:#00b096;}
+.auth-link{text-align:center;margin-top:18px;font-size:13px;color:var(--muted);}
+.auth-link a{color:var(--accent);font-weight:500;}
+.alert{padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:13px;}
+.alert-error{background:rgba(255,107,107,0.12);border:1px solid rgba(255,107,107,0.3);color:var(--accent2);}
+.photo-placeholder{width:80px;height:80px;border-radius:50%;background:var(--bg3);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;cursor:pointer;transition:border-color 0.2s;color:var(--muted);font-size:12px;flex-direction:column;gap:4px;}
+.photo-placeholder:hover{border-color:var(--accent);}
+.photo-placeholder svg{width:24px;height:24px;stroke:var(--muted);}
+.section-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:20px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+</style>
+</head>
+<body>
+<div class="register-wrap">
+  <div class="brand">
+    <div class="brand-name">Traveloop</div>
+    <div class="brand-sub">Create your traveler profile</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Create Account</div>
+    <div class="card-sub">Join thousands of travelers planning smarter trips</div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert alert-error">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+    <form method="POST">
+      <div class="photo-placeholder">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Photo
+      </div>
+      <div class="section-title">Personal Information</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">First Name *</label>
+          <input type="text" name="first_name" class="form-control" placeholder="John" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name</label>
+          <input type="text" name="last_name" class="form-control" placeholder="Doe">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Email Address *</label>
+          <input type="email" name="email" class="form-control" placeholder="john@example.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="tel" name="phone" class="form-control" placeholder="+1 234 567 8900">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">City</label>
+          <input type="text" name="city" class="form-control" placeholder="New York">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Country</label>
+          <input type="text" name="country" class="form-control" placeholder="USA">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">About You (Additional Information)</label>
+        <textarea name="bio" class="form-control" placeholder="Tell us about your travel style and interests..."></textarea>
+      </div>
+      <div class="section-title">Security</div>
+      <div class="form-group">
+        <label class="form-label">Password *</label>
+        <input type="password" name="password" class="form-control" placeholder="Min 6 characters" required minlength="6">
+      </div>
+      <button type="submit" class="btn-primary">Create Account</button>
+    </form>
+    <div class="auth-link">Already have an account? <a href="{{ url_for('login') }}">Sign in</a></div>
+  </div>
+</div>
+</body>
+</html>

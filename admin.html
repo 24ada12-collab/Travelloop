@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Admin Panel — Traveloop{% endblock %}
+{% block topbar_title %}Admin Panel{% endblock %}
+
+{% block content %}
+<div class="grid-4 mb-24">
+  <div class="stat-box">
+    <div class="stat-value">{{ users|length }}</div>
+    <div class="stat-label">Users</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-value">{{ trips|length }}</div>
+    <div class="stat-label">Trips</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-value">{{ posts|length }}</div>
+    <div class="stat-label">Community Posts</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-value">{{ expenses|length }}</div>
+    <div class="stat-label">Expenses</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">👥 Users</span>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Trips</th>
+        <th>Role</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.first_name }}</td>
+        <td>{{ u.email }}</td>
+        <td>{{ u.trips|length }}</td>
+        <td>
+          {% if u.is_admin %}
+          <span class="badge badge-warning">Admin</span>
+          {% else %}
+          <span class="badge badge-muted">Traveler</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

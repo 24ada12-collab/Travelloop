@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — Traveloop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1117;--bg2:#161b22;--bg3:#1c2330;--card:#1e2736;--border:#2d3748;--accent:#00c6a7;--accent2:#ff6b6b;--text:#e6edf3;--muted:#8b949e;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;}
+.auth-left{flex:1;background:linear-gradient(135deg,#0a1628 0%,#0d2137 50%,#071a2e 100%);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:60px;position:relative;overflow:hidden;}
+.auth-left::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(0,198,167,0.08) 0%,transparent 60%);}
+.auth-bg-circles{position:absolute;inset:0;overflow:hidden;}
+.circle{position:absolute;border-radius:50%;border:1px solid rgba(0,198,167,0.08);}
+.c1{width:400px;height:400px;top:-100px;left:-100px;}
+.c2{width:600px;height:600px;top:50%;left:50%;transform:translate(-50%,-50%);}
+.c3{width:200px;height:200px;bottom:50px;right:50px;}
+.auth-brand{position:relative;z-index:1;text-align:center;}
+.brand-name{font-family:'Playfair Display',serif;font-size:52px;font-weight:700;color:var(--accent);letter-spacing:1px;}
+.brand-tagline{font-size:16px;color:var(--muted);margin-top:8px;letter-spacing:0.3px;}
+.auth-features{position:relative;z-index:1;margin-top:60px;display:flex;flex-direction:column;gap:20px;max-width:340px;}
+.feature{display:flex;align-items:flex-start;gap:14px;}
+.feature-icon{width:40px;height:40px;border-radius:10px;background:rgba(0,198,167,0.1);border:1px solid rgba(0,198,167,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.feature-icon svg{width:20px;height:20px;stroke:var(--accent);fill:none;stroke-width:1.8;}
+.feature-text h4{font-size:14px;font-weight:600;margin-bottom:2px;}
+.feature-text p{font-size:12px;color:var(--muted);line-height:1.5;}
+.auth-right{width:480px;display:flex;flex-direction:column;justify-content:center;padding:60px;}
+.auth-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px;}
+.auth-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:600;margin-bottom:4px;}
+.auth-subtitle{font-size:13px;color:var(--muted);margin-bottom:28px;}
+.form-group{margin-bottom:18px;}
+.form-label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;}
+.form-control{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s;}
+.form-control:focus{border-color:var(--accent);}
+.form-control::placeholder{color:var(--muted);}
+.btn-primary{width:100%;background:var(--accent);color:#000;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.2s;margin-top:4px;}
+.btn-primary:hover{background:#00b096;}
+.auth-link{text-align:center;margin-top:20px;font-size:13px;color:var(--muted);}
+.auth-link a{color:var(--accent);font-weight:500;}
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--muted);font-size:12px;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.demo-box{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-top:16px;}
+.demo-box p{font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+.demo-creds{display:flex;flex-direction:column;gap:4px;}
+.demo-cred{font-size:12px;color:var(--text);display:flex;justify-content:space-between;}
+.demo-cred span{color:var(--accent);font-family:monospace;}
+.alert{padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:13px;}
+.alert-error{background:rgba(255,107,107,0.12);border:1px solid rgba(255,107,107,0.3);color:var(--accent2);}
+</style>
+</head>
+<body>
+<div class="auth-left">
+  <div class="auth-bg-circles">
+    <div class="circle c1"></div>
+    <div class="circle c2"></div>
+    <div class="circle c3"></div>
+  </div>
+  <div class="auth-brand">
+    <div class="brand-name">Traveloop</div>
+    <div class="brand-tagline">Plan. Explore. Remember.</div>
+  </div>
+  <div class="auth-features">
+    <div class="feature">
+      <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+      <div class="feature-text"><h4>Multi-city Itineraries</h4><p>Plan complex trips with stops, dates and activities per city.</p></div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+      <div class="feature-text"><h4>Budget Tracking</h4><p>Auto expense invoicing with category breakdowns and insights.</p></div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+      <div class="feature-text"><h4>Community Sharing</h4><p>Share trips publicly and discover travel inspiration.</p></div>
+    </div>
+  </div>
+</div>
+<div class="auth-right">
+  <div class="auth-card">
+    <div class="auth-title">Welcome back</div>
+    <div class="auth-subtitle">Sign in to your Traveloop account</div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert alert-error">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+    <form method="POST">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" name="email" class="form-control" placeholder="you@example.com" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn-primary">Sign In</button>
+    </form>
+    <div class="divider">Demo Accounts</div>
+    <div class="demo-box">
+      <p>Quick Login Credentials</p>
+      <div class="demo-creds">
+        <div class="demo-cred">Admin: admin@traveloop.com <span>admin123</span></div>
+        <div class="demo-cred">Demo: james@demo.com <span>demo123</span></div>
+      </div>
+    </div>
+    <div class="auth-link">Don't have an account? <a href="{{ url_for('register') }}">Register here</a></div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}{{ trip.title }} — Traveloop{% endblock %}
+{% block topbar_title %}{{ trip.title }}{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('itinerary', trip_id=trip.id) }}" class="btn btn-secondary btn-sm">Edit Itinerary</a>
+  <a href="{{ url_for('expenses', trip_id=trip.id) }}" class="btn btn-secondary btn-sm">Expenses</a>
+  <a href="{{ url_for('notes', trip_id=trip.id) }}" class="btn btn-secondary btn-sm">Notes</a>
+  <a href="{{ url_for('checklist', trip_id=trip.id) }}" class="btn btn-primary btn-sm">Checklist</a>
+{% endblock %}
+{% block content %}
+<!-- TRIP HEADER -->
+<div class="card mb-20" style="background:linear-gradient(135deg,#0a2540,#0d2f4a);border-color:rgba(0,198,167,0.2);">
+  <div class="flex-between flex-wrap" style="gap:16px;">
+    <div>
+      <div class="flex-center gap-8 mb-8">
+        <span class="badge {% if trip.status == 'ongoing' %}badge-info{% elif trip.status == 'upcoming' %}badge-warning{% else %}badge-muted{% endif %}">{{ trip.status|capitalize }}</span>
+        {% if trip.is_public %}<span class="badge badge-success">🌐 Public</span>{% endif %}
+      </div>
+      <h2 class="font-display" style="font-size:24px;margin-bottom:6px;">{{ trip.title }}</h2>
+      <p class="text-muted fs-13">📍 {{ trip.destination or 'Destination TBD' }}</p>
+      {% if trip.description %}<p class="fs-13 mt-8">{{ trip.description }}</p>{% endif %}
+    </div>
+    <div style="text-align:right;">
+      {% if trip.start_date %}
+      <div style="font-size:13px;color:var(--muted);">📅 {{ trip.start_date.strftime('%d %b %Y') }} → {{ trip.end_date.strftime('%d %b %Y') if trip.end_date else 'Open' }}</div>
+      {% if trip.start_date and trip.end_date %}
+      <div style="font-size:13px;color:var(--muted);margin-top:4px;">{{ (trip.end_date - trip.start_date).days }} days</div>
+      {% endif %}
+      {% endif %}
+      {% if trip.total_budget %}
+      <div style="font-size:20px;font-weight:700;color:var(--accent);margin-top:8px;">₹{{ '{:,.0f}'.format(trip.total_budget) }}</div>
+      <div style="font-size:11px;color:var(--muted);">Total Budget</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- BUDGET OVERVIEW -->
+{% if trip.total_budget and total_spent %}
+<div class="card mb-20">
+  <div class="card-title mb-12">💰 Budget Overview</div>
+  <div class="grid-3 mb-12">
+    <div class="stat-box"><div class="stat-value">₹{{ '{:,.0f}'.format(trip.total_budget) }}</div><div class="stat-label">Total Budget</div></div>
+    <div class="stat-box"><div class="stat-value" style="color:var(--accent2);">₹{{ '{:,.0f}'.format(total_spent) }}</div><div class="stat-label">Total Spent</div></div>
+    <div class="stat-box">
+      {% set remaining = trip.total_budget - total_spent %}
+      <div class="stat-value" style="color:{% if remaining >= 0 %}var(--accent){% else %}var(--accent2){% endif %};">₹{{ '{:,.0f}'.format(remaining|abs) }}</div>
+      <div class="stat-label">{% if remaining >= 0 %}Remaining{% else %}Over Budget{% endif %}</div>
+    </div>
+  </div>
+  {% set pct = [(total_spent / trip.total_budget * 100), 100]|min %}
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" style="width:{{ pct }}%;background:{% if pct > 100 %}var(--accent2){% elif pct > 80 %}var(--accent3){% else %}var(--accent){% endif %};"></div>
+  </div>
+  <div class="flex-between mt-8">
+    <span class="fs-12 text-muted">{{ '{:.0f}'.format(pct) }}% spent</span>
+    <a href="{{ url_for('expenses', trip_id=trip.id) }}" class="fs-12 text-accent">View Full Invoice →</a>
+  </div>
+</div>
+{% endif %}
+
+<!-- ITINERARY SECTIONS -->
+<div class="card mb-20">
+  <div class="card-header">
+    <span class="card-title">📋 Itinerary</span>
+    <a href="{{ url_for('itinerary', trip_id=trip.id) }}" class="btn btn-secondary btn-sm">+ Add Section</a>
+  </div>
+  {% if sections %}
+    {% for section in sections %}
+    <div class="section-card section-type-{{ section.section_type }}">
+      <div class="flex-between mb-8">
+        <div>
+          <span class="badge {% if section.section_type == 'travel' %}badge-info{% elif section.section_type == 'hotel' %}badge-warning{% else %}badge-success{% endif %}">{{ section.section_type|capitalize }}</span>
+          <span style="font-size:14px;font-weight:600;margin-left:8px;">{{ section.title }}</span>
+        </div>
+        {% if section.budget %}
+        <span class="badge badge-muted">₹{{ '{:,.0f}'.format(section.budget) }}</span>
+        {% endif %}
+      </div>
+      {% if section.description %}<p class="fs-13 text-muted mb-8">{{ section.description }}</p>{% endif %}
+      <div class="flex-center gap-12">
+        {% if section.location %}<span class="fs-12 text-muted">📍 {{ section.location }}</span>{% endif %}
+        {% if section.start_date %}<span class="fs-12 text-muted">📅 {{ section.start_date.strftime('%d %b') }} → {{ section.end_date.strftime('%d %b %Y') if section.end_date else '' }}</span>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+  <div class="empty-state"><div class="empty-state-text">No itinerary sections yet. <a href="{{ url_for('itinerary', trip_id=trip.id) }}">Add your first section</a></div></div>
+  {% endif %}
+</div>
+
+<!-- QUICK LINKS -->
+<div class="grid-3">
+  <a href="{{ url_for('notes', trip_id=trip.id) }}" style="text-decoration:none;">
+    <div class="card" style="cursor:pointer;text-align:center;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="font-size:28px;margin-bottom:8px;">📝</div>
+      <div style="font-weight:600;font-size:14px;">Trip Notes</div>
+      <div class="text-muted fs-12">Add reminders & details</div>
+    </div>
+  </a>
+  <a href="{{ url_for('checklist', trip_id=trip.id) }}" style="text-decoration:none;">
+    <div class="card" style="cursor:pointer;text-align:center;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="font-size:28px;margin-bottom:8px;">✅</div>
+      <div style="font-weight:600;font-size:14px;">Packing Checklist</div>
+      <div class="text-muted fs-12">Track what to pack</div>
+    </div>
+  </a>
+  <a href="{{ url_for('expenses', trip_id=trip.id) }}" style="text-decoration:none;">
+    <div class="card" style="cursor:pointer;text-align:center;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="font-size:28px;margin-bottom:8px;">💳</div>
+      <div style="font-weight:600;font-size:14px;">Expense Invoice</div>
+      <div class="text-muted fs-12">Track costs & export PDF</div>
+    </div>
+  </a>
+</div>
+{% endblock %}

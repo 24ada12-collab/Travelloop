@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% block title %}Expenses — {{ trip.title }}{% endblock %}
+{% block topbar_title %}Expense Invoice — {{ trip.title }}{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('trip_detail', trip_id=trip.id) }}" class="btn btn-secondary btn-sm">← Back</a>
+  <button onclick="window.print()" class="btn btn-primary btn-sm">🖨️ Print / Export PDF</button>
+{% endblock %}
+{% block extra_head %}
+<style>
+@media print {
+  .sidebar,.topbar,.topbar-actions,.no-print{display:none!important;}
+  .main{margin-left:0!important;}
+  .card{border:1px solid #ddd!important;background:#fff!important;color:#000!important;}
+  body{background:#fff!important;color:#000!important;}
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="grid-2" style="align-items:start;">
+  <!-- INVOICE -->
+  <div>
+    <div class="card mb-16">
+      <!-- Invoice Header -->
+      <div class="flex-between mb-16" style="flex-wrap:wrap;gap:12px;">
+        <div>
+          <div class="font-display" style="font-size:20px;margin-bottom:4px;">{{ trip.title }}</div>
+          <div class="text-muted fs-13">📍 {{ trip.destination or 'N/A' }}</div>
+          <div class="text-muted fs-13">{{ trip.start_date.strftime('%b %d, %Y') if trip.start_date else '' }} – {{ trip.end_date.strftime('%b %d, %Y') if trip.end_date else '' }}</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="badge badge-warning" style="margin-bottom:6px;">INV-TL-{{ '%05d'|format(trip.id) }}</div>
+          <div class="text-muted fs-12">Generated: {{ now.strftime('%b %d, %Y') if now else 'Today' }}</div>
+          <div class="text-muted fs-12">Status: {% if grand_total > (trip.total_budget or 999999) %}<span class="text-danger">Over Budget</span>{% else %}<span class="text-accent">Within Budget</span>{% endif %}</div>
+        </div>
+      </div>
+      <hr class="divider">
+      <!-- Table -->
+      <table class="table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Qty / Details</th>
+            <th>Unit Cost</th>
+            <th>Amount</th>
+            <th class="no-print"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i, e in expenses|enumerate %}
+          <tr>
+            <td class="text-muted">{{ i+1 }}</td>
+            <td><span class="badge badge-muted">{{ e.category }}</span></td>
+            <td>{{ e.description }}</td>
+            <td class="text-muted">{{ e.qty_details }}</td>
+            <td>₹{{ '{:,.0f}'.format(e.unit_cost) }}</td>
+            <td style="font-weight:600;">₹{{ '{:,.0f}'.format(e.amount) }}</td>
+            <td class="no-print">
+              <form method="POST" action="{{ url_for('delete_expense', expense_id=e.id) }}" onsubmit="return confirm('Remove this expense?')">
+                <button type="submit" class="btn-icon" style="background:none;border:none;color:var(--accent2);cursor:pointer;">✕</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+          {% if not expenses %}
+          <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px;">No expenses added yet</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+      <hr class="divider">
+      <!-- Totals -->
+      <div style="display:flex;justify-content:flex-end;">
+        <div style="min-width:240px;">
+          <div class="flex-between mb-8"><span class="text-muted fs-13">Subtotal</span><span class="fw-600">₹{{ '{:,.0f}'.format(subtotal) }}</span></div>
+          <div class="flex-between mb-8"><span class="text-muted fs-13">Tax (5%)</span><span>₹{{ '{:,.0f}'.format(tax) }}</span></div>
+          <div class="flex-between mb-12"><span class="text-muted fs-13">Discount</span><span class="text-accent">-₹{{ '{:,.0f}'.format(discount) }}</span></div>
+          <div class="flex-between" style="border-top:1px solid var(--border);padding-top:12px;">
+            <span style="font-weight:700;font-size:15px;">Grand Total</span>
+            <span style="font-weight:700;font-size:18px;color:var(--accent);">₹{{ '{:,.0f}'.format(grand_total) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div>
+    <!-- Budget Insights -->
+    <div class="card mb-16">
+      <div class="card-title mb-16">💡 Budget Insights</div>
+      {% if trip.total_budget %}
+      <div class="grid-2 mb-12">
+        <div class="stat-box"><div class="stat-value">₹{{ '{:,.0f}'.format(trip.total_budget) }}</div><div class="stat-label">Total Budget</div></div>
+        <div class="stat-box"><div class="stat-value" style="color:{% if grand_total > trip.total_budget %}var(--accent2){% else %}var(--accent){% endif %};">₹{{ '{:,.0f}'.format((trip.total_budget - grand_total)|abs) }}</div><div class="stat-label">{% if grand_total > trip.total_budget %}Over Budget{% else %}Remaining{% endif %}</div></div>
+      </div>
+      {% set pct = [(grand_total / trip.total_budget * 100), 100]|min %}
+      <div class="progress-bar-wrap mb-8"><div class="progress-bar" style="width:{{ pct }}%;background:{% if pct > 100 %}var(--accent2){% elif pct > 80 %}var(--accent3){% else %}var(--accent){% endif %};"></div></div>
+      <div class="fs-12 text-muted text-right">{{ '{:.0f}'.format(pct) }}% of budget used</div>
+      {% else %}
+      <p class="text-muted fs-13">No budget set for this trip. <a href="{{ url_for('create_trip') }}">Set a budget</a> to see insights.</p>
+      {% endif %}
+      {% if by_category %}
+      <hr class="divider">
+      <div class="card-title mb-12">By Category</div>
+      <canvas id="catChart" height="200"></canvas>
+      {% endif %}
+    </div>
+
+    <!-- Add Expense -->
+    <div class="card no-print">
+      <div class="card-title mb-16">+ Add Expense</div>
+      <form method="POST">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select name="category" class="form-control">
+              <option>hotel</option><option>travel</option><option>food</option>
+              <option>activity</option><option>shopping</option><option>other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Qty / Details</label>
+            <input type="text" name="qty_details" class="form-control" placeholder="e.g. 3 nights">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input type="text" name="description" class="form-control" placeholder="e.g. Hotel booking Paris" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Unit Cost (₹)</label>
+            <input type="number" name="unit_cost" class="form-control" placeholder="0" min="0" step="0.01">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Total Amount (₹)</label>
+            <input type="number" name="amount" class="form-control" placeholder="0" min="0" step="0.01" required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Add Expense</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+{% if by_category %}
+const data = {{ by_category|safe }};
+const labels = Object.keys(data);
+const values = Object.values(data);
+new Chart(document.getElementById('catChart'), {
+  type: 'doughnut',
+  data: {
+    labels: labels,
+    datasets: [{
+      data: values,
+      backgroundColor: ['#00c6a7','#ff6b6b','#f6c90e','#63b3ed','#9f7aea','#fc8181'],
+      borderWidth: 0
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom', labels: { color: '#8b949e', font: { size: 11 } } }
+    }
+  }
+});
+{% endif %}
+</script>
+{% endblock %}

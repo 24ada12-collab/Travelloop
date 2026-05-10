@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Search — Traveloop{% endblock %}
+{% block topbar_title %}Search Activities & Cities{% endblock %}
+{% block content %}
+<!-- SEARCH BAR -->
+<form method="GET" class="mb-20">
+  <div style="display:flex;gap:10px;margin-bottom:12px;">
+    <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search for activities, cities, destinations..." style="flex:1;">
+    <input type="hidden" name="type" value="{{ search_type }}" id="search-type-hidden">
+    <button type="submit" class="btn btn-primary">Search</button>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <button type="button" onclick="setType('activity')" class="btn {% if search_type == 'activity' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">🎯 Activities</button>
+    <button type="button" onclick="setType('city')" class="btn {% if search_type == 'city' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">🌍 Cities</button>
+  </div>
+</form>
+
+{% if q %}<div class="mb-16 text-muted fs-13">Showing {{ results|length }} result{% if results|length != 1 %}s{% endif %} for "{{ q }}"</div>{% endif %}
+
+{% if search_type == 'activity' %}
+  {% if results %}
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    {% for r in results %}
+    <div class="card card-sm">
+      <div class="flex-between flex-wrap" style="gap:12px;">
+        <div>
+          <div style="font-size:15px;font-weight:600;margin-bottom:4px;">{{ r.name }}</div>
+          <div class="flex-center gap-12 flex-wrap">
+            <span class="badge badge-info">{{ r.type|capitalize }}</span>
+            <span class="fs-13 text-muted">📍 {{ r.city }}</span>
+            <span class="fs-13 text-muted">⏱ {{ r.duration }}</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="text-align:right;">
+            <div style="font-size:16px;font-weight:700;color:var(--accent);">${{ r.cost }}</div>
+            <div class="fs-12 text-muted">per person</div>
+          </div>
+          {% if user_trips %}
+          <select onchange="addToTrip(this, '{{ r.name }}')" class="form-control" style="width:auto;font-size:12px;">
+            <option value="">+ Add to Trip</option>
+            {% for t in user_trips %}<option value="{{ t.id }}">{{ t.title }}</option>{% endfor %}
+          </select>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-text">No activities found{% if q %} for "{{ q }}"{% endif %}. Try a different search.</div></div>
+  {% endif %}
+
+{% else %}
+  {% if results %}
+  <div class="grid-2">
+    {% for r in results %}
+    <div class="card">
+      <div class="flex-between mb-12">
+        <div style="font-size:16px;font-weight:600;">{{ r.name }}</div>
+        <span class="badge badge-muted">{{ r.region }}</span>
+      </div>
+      <div class="flex-center gap-12 flex-wrap mb-12">
+        <span class="fs-13 text-muted">🌍 {{ r.country }}</span>
+        <span class="fs-13 text-muted">💰 {{ r.cost_index }} cost</span>
+        <span class="fs-13 text-muted">📈 {{ r.popularity }}</span>
+      </div>
+      {% if user_trips %}
+      <select onchange="addCityToTrip(this, '{{ r.name }}, {{ r.country }}')" class="form-control" style="font-size:12px;">
+        <option value="">+ Add as Destination</option>
+        {% for t in user_trips %}<option value="{{ t.id }}">{{ t.title }}</option>{% endfor %}
+      </select>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state"><div class="empty-state-icon">🌍</div><div class="empty-state-text">No cities found{% if q %} for "{{ q }}"{% endif %}.</div></div>
+  {% endif %}
+{% endif %}
+
+<div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:var(--accent);color:#000;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;"></div>
+{% endblock %}
+{% block scripts %}
+<script>
+function setType(t){document.getElementById('search-type-hidden').value=t;document.querySelector('form').submit();}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2500);}
+function addToTrip(sel, name){if(!sel.value)return;showToast('✅ ' + name + ' noted for trip!');sel.selectedIndex=0;}
+function addCityToTrip(sel, city){if(!sel.value)return;showToast('📍 ' + city + ' added as destination note!');sel.selectedIndex=0;}
+</script>
+{% endblock %}

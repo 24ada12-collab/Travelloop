@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — Traveloop{% endblock %}
+{% block topbar_title %}Dashboard{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('create_trip') }}" class="btn btn-primary btn-sm">+ Plan a Trip</a>
+{% endblock %}
+{% block content %}
+<div class="mb-24">
+  <h2 class="font-display" style="font-size:26px;margin-bottom:4px;">Welcome back, {{ user.first_name }} ✈️</h2>
+  <p class="text-muted fs-13">Here's your travel overview</p>
+</div>
+
+<!-- STATS -->
+{% set ongoing_count = trips|selectattr('status','equalto','ongoing')|list|length %}
+{% set upcoming_count = trips|selectattr('status','equalto','upcoming')|list|length %}
+{% set completed_count = trips|selectattr('status','equalto','completed')|list|length %}
+<div class="grid-4 mb-24">
+  <div class="stat-box">
+    <div class="stat-value">{{ trips|length }}</div>
+    <div class="stat-label">Total Trips</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-value" style="color:#63b3ed;">{{ ongoing_count }}</div>
+    <div class="stat-label">Ongoing</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-value" style="color:var(--accent3);">{{ upcoming_count }}</div>
+    <div class="stat-label">Upcoming</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-value" style="color:var(--muted);">{{ completed_count }}</div>
+    <div class="stat-label">Completed</div>
+  </div>
+</div>
+
+<!-- BANNER -->
+<div class="card mb-20" style="background:linear-gradient(135deg,#0a2540 0%,#0d2f4a 100%);border-color:rgba(0,198,167,0.2);padding:32px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+    <div>
+      <p class="text-muted fs-13 mb-8">Ready for your next adventure?</p>
+      <h3 class="font-display" style="font-size:22px;margin-bottom:8px;">Plan your perfect trip today</h3>
+      <p class="text-muted fs-13">Create itineraries, track budgets, and share with friends.</p>
+    </div>
+    <a href="{{ url_for('create_trip') }}" class="btn btn-primary">+ Start Planning</a>
+  </div>
+</div>
+
+<div class="grid-2 mb-20">
+  <!-- TOP DESTINATIONS -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">🌍 Top Regional Selections</span>
+      <a href="{{ url_for('search') }}?type=city" class="btn btn-secondary btn-sm">Explore</a>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      {% for dest in top_destinations %}
+      <a href="{{ url_for('search') }}?q={{ dest }}&type=city" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:100px;font-size:13px;color:var(--text);text-decoration:none;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        📍 {{ dest }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- COMMUNITY POSTS -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">💬 Community Highlights</span>
+      <a href="{{ url_for('community') }}" class="btn btn-secondary btn-sm">View All</a>
+    </div>
+    {% if community_posts %}
+      {% for post in community_posts[:3] %}
+      <div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+        <div style="font-size:13px;font-weight:600;margin-bottom:2px;">{{ post.title[:60] }}{% if post.title|length > 60 %}...{% endif %}</div>
+        <div style="font-size:11px;color:var(--muted);">📍 {{ post.destination or 'General' }} · ❤️ {{ post.likes }}</div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state"><div class="empty-state-text">No posts yet. Be the first!</div></div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- PREVIOUS TRIPS -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">🗺️ Your Trips</span>
+    <a href="{{ url_for('trips') }}" class="btn btn-secondary btn-sm">All Trips</a>
+  </div>
+  {% if trips %}
+  <div class="grid-3">
+    {% for trip in trips[:6] %}
+    <a href="{{ url_for('trip_detail', trip_id=trip.id) }}" style="text-decoration:none;">
+      <div class="trip-card">
+        <div class="flex-between mb-8">
+          <span class="badge {% if trip.status == 'ongoing' %}badge-info{% elif trip.status == 'upcoming' %}badge-warning{% else %}badge-muted{% endif %}">
+            {{ trip.status|capitalize }}
+          </span>
+          <span class="fs-12 text-muted">{{ trip.start_date.strftime('%b %Y') if trip.start_date else '—' }}</span>
+        </div>
+        <div class="trip-card-title">{{ trip.title }}</div>
+        <div class="trip-card-dest">📍 {{ trip.destination or 'Destination TBD' }}</div>
+        <div class="trip-card-meta">
+          <span class="fs-12 text-muted">{{ trip.start_date.strftime('%d %b') if trip.start_date else '' }} – {{ trip.end_date.strftime('%d %b %Y') if trip.end_date else '' }}</span>
+          {% if trip.total_budget %}
+          <span class="badge badge-success">₹{{ '{:,.0f}'.format(trip.total_budget) }}</span>
+          {% endif %}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon">✈️</div>
+    <div class="empty-state-text">No trips yet. <a href="{{ url_for('create_trip') }}">Plan your first trip!</a></div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
